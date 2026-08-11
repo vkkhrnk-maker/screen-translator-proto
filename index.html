@@ -3917,11 +3917,20 @@ function render(){
   document.querySelectorAll('[data-tab]').forEach(el=>{ el.style.display = dropped(el.dataset.tab) ? 'none' : ''; });
   /* плитки инструментов подчиняются тому же правилу: вычтенная сборкой ветка не должна
      оставлять на главном кнопку, ведущую в никуда */
-  document.querySelectorAll('[data-tool]').forEach(el=>{ el.style.display = dropped(el.dataset.tool) ? 'none' : ''; });
+  document.querySelectorAll('[data-tool]').forEach(el=>{
+    /* на Android входу из чужих приложений нечего настраивать — плитки там нет */
+    const hide = dropped(el.dataset.tool) || (st.platform==='android' && el.dataset.tool==='selection');
+    el.style.display = hide ? 'none' : '';
+  });
   /* Две колонки всегда: плитка теперь с подписью, в три она сплющивается. Нечётную
      последнюю растягиваем на строку — иначе висит одиночка с дырой рядом. */
   const vis=[...document.querySelectorAll('[data-tool]')].filter(el=>el.style.display!=='none');
-  vis.forEach((el,i)=>{ el.style.gridColumn = (vis.length%2 && i===vis.length-1) ? '1/-1' : ''; });
+  vis.forEach((el,i)=>{
+    const wide = vis.length%2 && i===vis.length-1;
+    el.style.gridColumn = wide ? '1/-1' : '';
+    /* во всю ширину плитке хватает 96: иначе на Android ряд уходит под таббар */
+    el.style.height = wide ? '96px' : '';
+  });
   /* ---------- контрол поверх игры: развёрнутая панель или свёрнутый шарик ---------- */
   const pillOn=st.pill;
   document.getElementById('gamePill').style.display = pillOn?'':'none';
